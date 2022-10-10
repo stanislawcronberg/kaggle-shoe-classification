@@ -4,7 +4,7 @@ from typing import List
 from typing import Tuple
 
 import numpy as np
-from skimage import io
+from torchvision.io import read_image
 from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import Dataset
 
@@ -12,12 +12,17 @@ from torch.utils.data import Dataset
 class FootwearDataset(Dataset):
     def __init__(self, data_dir: Path, transform=None):
         self.image_paths, self.labels = self.__initialize_filepaths_and_labels(data_dir)
+        self.transform = transform
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, index):
-        image = io.imread(self.image_paths[index])
+        image = read_image(str(self.image_paths[index]))
+
+        if self.transform:
+            image = self.transform(image)
+
         label = self.labels[index]
 
         return image, label
