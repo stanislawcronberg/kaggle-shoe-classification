@@ -1,95 +1,18 @@
 import torch
-import time
-import copy
 from custom_dataset import FootwearDataset, get_train_val_dataloaders
 from pathlib import Path
-from torch.optim import Adam, lr_scheduler
+from torch.optim import Adam
 from models import MobileNetV3S
 import torch.nn as nn
+from torchvision.transforms import Resize
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
-def train_model(model, criterion, optimizer, scheduler, num_epochs=25):
-    since = time.time()
-
-    dataset = FootwearDataset(data_dir=Path('../data'), device=device)
-
-    train_loader, val_loader = get_train_val_dataloaders(dataset, val_size=0.2, batch_size=32, random_seed=42)
-    dataloaders = {
-        "train": train_loader,
-        "val": val_loader
-    }
-    dataset_sizes = {
-        "train": len(train_loader),
-        "val": len(val_loader)
-    }
-
-    best_model_wts = copy.deepcopy(model.state_dict())
-    best_acc = 0.0
-
-    for epoch in range(num_epochs):
-        print(f'Epoch {epoch}/{num_epochs - 1}')
-        print('-' * 10)
-
-        # Each epoch has a training and validation phase
-        for phase in ['train', 'val']:
-            if phase == 'train':
-                model.train()  # Set model to training mode
-            else:
-                model.eval()   # Set model to evaluate mode
-
-            running_loss = 0.0
-            running_corrects = 0
-
-            # Iterate over data.
-            for inputs, labels in dataloaders[phase]:
-                inputs = inputs.to(device)
-                labels = labels.to(device)
-
-                # zero the parameter gradients
-                optimizer.zero_grad()
-
-                # forward
-                # track history if only in train
-                with torch.set_grad_enabled(phase == 'train'):
-                    outputs = model(inputs)
-                    preds = torch.argmax(outputs, 1)
-                    loss = criterion(outputs, labels)
-
-                    # backward + optimize only if in training phase
-                    if phase == 'train':
-                        loss.backward()
-                        optimizer.step()
-
-                # statistics
-                running_loss += loss.item() * inputs.size(0)
-                running_corrects += torch.sum(preds == torch.argmax(labels, dim=1))
-            if phase == 'train':
-                scheduler.step()
-
-            epoch_loss = running_loss / dataset_sizes[phase]
-            epoch_acc = running_corrects.double() / dataset_sizes[phase]
-
-            print(f'{phase} Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}')
-
-            # deep copy the model
-            if phase == 'val' and epoch_acc > best_acc:
-                best_acc = epoch_acc
-                best_model_wts = copy.deepcopy(model.state_dict())
-
-        print()
-
-    time_elapsed = time.time() - since
-    print(f'Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s')
-    print(f'Best val Acc: {best_acc:4f}')
-
-    # load best model weights
-    model.load_state_dict(best_model_wts)
-    return model
-
-
 if __name__ == "__main__":
+
+    dataset = FootwearDataset(data_dir=Path("data"), transform=Resize((128, 128)), device=device)
+    train_loader, val_loader = get_train_val_dataloaders(dataset=dataset, val_size=0.2)
 
     mobilenet = MobileNetV3S(n_classes=3, n_channels=3)
 
@@ -97,6 +20,45 @@ if __name__ == "__main__":
 
     criterion = nn.CrossEntropyLoss()
 
-    scheduler = lr_scheduler.StepLR(optimizer, step_size=7, gamma=0.1)
+    num_epochs = 20
 
-    model = train_model(mobilenet, criterion, optimizer, scheduler, num_epochs=25)
+    for epoch in range(3):  # loop over the dataset multiple times
+
+        running_loss = 0.0
+        for i, data in enumerate(train_loader, 0):
+            # get the inputs; data is a list of [inputs, labels]
+            inputs, labels = data
+
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # forward + backward + optimize
+            outputs = mobilenet(inputs.to(device))
+            loss = criterion(outputs, labels.to(device))
+            loss.backward()
+            optimizer.step()
+
+            # print statistics
+            running_loss += loss.item()
+            if i % 10 == 0:  # print every 2000 mini-batches
+                print(f'[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 10:.3f}')
+                running_loss = 0.0
+
+    # evaluate
+    correct = 0
+    total = 0
+    # since we're not training, we don't need to calculate the gradients for our outputs
+    with torch.no_grad():
+        for data in val_loader:
+            images, labels = data
+            labels = labels.to(device)
+            labels = torch.argmax(labels, dim=1)
+            images = images.to(device)
+            # calculate outputs by running images through the network
+            outputs = mobilenet(images)
+            # the class with the highest energy is what we choose as prediction
+            predicted = torch.argmax(outputs.data, dim=1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+    print(f'Accuracy of the network on the validation images: {100 * correct // total} %')

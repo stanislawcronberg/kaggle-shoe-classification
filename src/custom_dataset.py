@@ -1,16 +1,16 @@
 import os
 from pathlib import Path
-from typing import List
-from typing import Tuple
+from typing import List, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
-from torchvision.io import read_image
-from torchvision.transforms import Resize, ToTensor
 from skimage.io import imread
 from sklearn.preprocessing import OneHotEncoder
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.sampler import SubsetRandomSampler
+from torchvision.io import read_image
+from torchvision.transforms import Resize
 
 
 def get_train_val_dataloaders(
@@ -52,36 +52,53 @@ class FootwearDataset(Dataset):
         self.image_paths, self.labels = self.__initialize_filepaths_and_labels(data_dir)
         self.transform = transform
         self.device = device
+        print(len(self.labels))
+        # Encode labels
+        self.labels_encoder = OneHotEncoder(sparse=False)
+        self.labels_encoder.fit(self.labels.reshape(-1, 1))
+        self.labels = self.labels_encoder.transform(self.labels)
 
     def __len__(self):
         return len(self.image_paths)
 
     def __getitem__(self, index):
 
-        image = imread(str(self.image_paths[index]))
-        image = torch.Tensor(image).permute(2, 0, 1)
+        image_path = self.image_paths[index]
+        image = imread(str(image_path))
+        image = torch.tensor(image, dtype=torch.float32)
+        image = image.permute(2, 0, 1)
+
+        label = self.labels[index]
+        label = torch.tensor(label, dtype=torch.float32)
 
         if self.transform:
             image = self.transform(image)
 
-        image = image.float().to(self.device)
+        if self.device is not None:
+            image = image.to(self.device)
+            label = label.to(self.device)
 
-        label = self.labels[index]
-
-        return image, torch.Tensor(label).to(self.device)
+        return image, label
 
     @staticmethod
     def __initialize_filepaths_and_labels(data_dir: Path) -> Tuple[List[Path], np.ndarray]:
         image_paths = [image_path for image_path in data_dir.glob("**/*.jpg")]
         labels = np.array([str(path).split(os.path.sep)[-2] for path in image_paths]).reshape(-1, 1)
 
-        encoder = OneHotEncoder(sparse=False)
-        labels = encoder.fit_transform(labels)
-
         return image_paths, labels
 
 
 if __name__ == '__main__':
-    dataset = FootwearDataset(data_dir=Path("../data/"), transform=Resize((128, 128)))
-    x, y = dataset[15]
-    print("asdf")
+    dataset = FootwearDataset(Path("../data/"))
+    train_loader, validation_loader = get_train_val_dataloaders(dataset)
+
+    # Get a batch of training data
+    images, labels = next(iter(train_loader))
+    print(images.shape)
+    print(labels.shape)
+
+    # Visualize an image
+    plt.imshow(images[0].permute(1, 2, 0).numpy().astype(np.uint8))
+    label = dataset.labels_encoder.inverse_transform(labels[0].reshape(1, -1))[0][0].upper()
+    plt.title(label)
+    plt.show()
