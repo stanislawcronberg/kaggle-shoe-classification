@@ -9,15 +9,14 @@ from skimage.io import imread
 from sklearn.preprocessing import OneHotEncoder
 from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.sampler import SubsetRandomSampler
-from torchvision.io import read_image
 from torchvision.transforms import Resize
 
 
 def get_train_val_dataloaders(
-        dataset,
-        val_size: float = 0.2,
-        batch_size: int = 32,
-        random_seed: int = 42,
+    dataset: Dataset,
+    val_size: float = 0.2,
+    batch_size: int = 32,
+    random_seed: int = 42,
 ) -> Tuple[DataLoader, DataLoader]:
 
     n_samples = len(dataset)
@@ -28,21 +27,13 @@ def get_train_val_dataloaders(
     np.random.seed(random_seed)
     np.random.shuffle(indices)
 
-    train_indices, val_indices = indices[:train_size], indices[:train_size]
+    train_indices, val_indices = indices[:train_size], indices[train_size:]
 
     train_sampler = SubsetRandomSampler(train_indices)
     valid_sampler = SubsetRandomSampler(val_indices)
 
-    train_loader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=batch_size,
-        sampler=train_sampler
-    )
-    validation_loader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=batch_size,
-        sampler=valid_sampler
-    )
+    train_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=train_sampler)
+    validation_loader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, sampler=valid_sampler)
 
     return train_loader, validation_loader
 
@@ -52,10 +43,10 @@ class FootwearDataset(Dataset):
         self.image_paths, self.labels = self.__initialize_filepaths_and_labels(data_dir)
         self.transform = transform
         self.device = device
-        print(len(self.labels))
+
         # Encode labels
         self.labels_encoder = OneHotEncoder(sparse=False)
-        self.labels_encoder.fit(self.labels.reshape(-1, 1))
+        self.labels_encoder.fit(self.labels)
         self.labels = self.labels_encoder.transform(self.labels)
 
     def __len__(self):
@@ -88,8 +79,8 @@ class FootwearDataset(Dataset):
         return image_paths, labels
 
 
-if __name__ == '__main__':
-    dataset = FootwearDataset(Path("../data/"))
+if __name__ == "__main__":
+    dataset = FootwearDataset(Path("data/"))
     train_loader, validation_loader = get_train_val_dataloaders(dataset)
 
     # Get a batch of training data

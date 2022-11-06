@@ -1,0 +1,64 @@
+{
+    // NOTES:
+    // FILES TO EXCLUDE FROM VSCODE ANALYSIS
+    "files.watcherExclude": {
+        "**data/**": true,
+    },
+    //
+    // AUTOSAVE
+    "files.autoSave": "onFocusChange", // See https://tinyurl.com/vscode-focus-change
+    //
+    // FORMATTER (BLACK)
+    // Repo: https://github.com/psf/black
+    // Docs: https://black.readthedocs.io/en/stable/
+    // Options: Run `black --help` in terminal
+    //
+    // Unfortunately black doesn't support formatting only modified lines,
+    // so it will reformat the whole file on save.
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "editor.formatOnSaveMode": "file", // "modifications" does not work with black
+    "python.formatting.blackArgs": [
+        "--line-length=120",
+        // "--fast" // Uncomment for faster formatting, ommits an AST sanity check
+        // "--exclude=INSERT_FILE_OR_FOLDER" // Exclude files or folders from formatting (such as venv or other)
+        // 
+    ],
+    "python.formatting.blackPath": "black",
+    //
+    // LINTER (FLAKE8)
+    // Repo: https://github.com/PyCQA/flake8
+    // Rules: https://www.flake8rules.com
+    // Options: Run `flake8 --help` in terminal or visit https://tinyurl.com/flake8options
+    "python.linting.flake8Enabled": true,
+    "python.linting.enabled": true,
+    "python.linting.flake8Args": [
+        "--per-file-ignores=__init__.py:F401", //Ignores the rule only in the specified file/files
+        "--ignore=", // Populate with rules to ignore
+        "--max-line-length=120"
+    ],
+    //
+    // IMPORT SORTING (ISORT)
+    // Docs: https://pycqa.github.io/isort/docs/configuration/options/
+    // Repo: https://github.com/PyCQA/isort
+    // Options: Run `isort --help` in terminal or visit docs above
+    "isort.check": true,
+    "isort.importStrategy": "fromEnvironment", // Prefers isort found in the environment over extension
+    "isort.args": [
+        "--python-version=3.9", // Specify python version
+        "--profile=black", // black compatible sorting
+        "--filter-files", // Only sort imports in files that are in the project root
+        "--line-length=120",
+        "--multi-line-output=5" // How ISORT should handle multi-line imports
+    ],
+    //
+    // DOCSTRING LINTER
+    // Rules: https://tinyurl.com/pydocstyle
+    // Options: Run `pydocstyle --help` in terminal
+    "python.linting.pydocstyleEnabled": true,
+    "python.linting.pydocstyleArgs": [
+        // Using plain "--ignore" instead of "--add-ignore" reverts default ignored rules
+        "--add-ignore=D100,D101,D102,D103,D104,D105,D106,D107", // Ignore enforcing docstrings everywhere
+    ],
+    "python.analysis.typeCheckingMode": "off",
+}
