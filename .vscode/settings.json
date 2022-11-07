@@ -2,6 +2,7 @@
     // NOTES:
     // FILES TO EXCLUDE FROM VSCODE ANALYSIS
     "files.watcherExclude": {
+        "**lightning_logs/**": true,
         "**data/**": true,
     },
     //
@@ -19,10 +20,9 @@
     "python.formatting.provider": "black",
     "editor.formatOnSaveMode": "file", // "modifications" does not work with black
     "python.formatting.blackArgs": [
-        "--line-length=120",
+        "--line-length=110",
         // "--fast" // Uncomment for faster formatting, ommits an AST sanity check
         // "--exclude=INSERT_FILE_OR_FOLDER" // Exclude files or folders from formatting (such as venv or other)
-        // 
     ],
     "python.formatting.blackPath": "black",
     //
@@ -34,8 +34,8 @@
     "python.linting.enabled": true,
     "python.linting.flake8Args": [
         "--per-file-ignores=__init__.py:F401", //Ignores the rule only in the specified file/files
-        "--ignore=", // Populate with rules to ignore
-        "--max-line-length=120"
+        "--ignore=E999", // Populate with rules to ignore
+        "--max-line-length=110"
     ],
     //
     // IMPORT SORTING (ISORT)
@@ -45,12 +45,14 @@
     "isort.check": true,
     "isort.importStrategy": "fromEnvironment", // Prefers isort found in the environment over extension
     "isort.args": [
-        "--python-version=3.9", // Specify python version
-        "--profile=black", // black compatible sorting
-        "--filter-files", // Only sort imports in files that are in the project root
-        "--line-length=120",
-        "--multi-line-output=5" // How ISORT should handle multi-line imports
+        "--profile=black",
+        "--line-length=110",
     ],
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+        }
+    },
     //
     // DOCSTRING LINTER
     // Rules: https://tinyurl.com/pydocstyle
@@ -60,5 +62,5 @@
         // Using plain "--ignore" instead of "--add-ignore" reverts default ignored rules
         "--add-ignore=D100,D101,D102,D103,D104,D105,D106,D107", // Ignore enforcing docstrings everywhere
     ],
-    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.typeCheckingMode": "off", // Disable type checking, usually incorrect and quite annoying
 }
