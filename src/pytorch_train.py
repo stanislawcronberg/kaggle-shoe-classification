@@ -6,7 +6,7 @@ from torch.optim import Adam
 from torchvision.transforms import Resize
 from tqdm import tqdm
 
-from custom_dataset import FootwearDataset, get_train_val_dataloaders
+from datasets.shoe_dataset import FootwearDataset, get_train_val_dataloaders
 from models import MobileNetV3S
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
     train_loader, val_loader = get_train_val_dataloaders(dataset=dataset, val_size=0.2)
 
-    mobilenet = MobileNetV3S(n_classes=3, n_channels=3)
+    mobilenet = MobileNetV3S(n_classes=3, in_channels=3)
 
     optimizer = Adam(mobilenet.parameters(), lr=0.001)
 
