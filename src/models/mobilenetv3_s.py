@@ -3,10 +3,10 @@ from torchvision.models import MobileNet_V3_Small_Weights, mobilenet_v3_small
 
 
 class MobileNetV3S(nn.Module):
-    def __init__(self, n_classes: int, n_channels: int = 3):
+    def __init__(self, n_classes: int, in_channels: int = 3):
         super().__init__()
         self.n_classes = n_classes
-        self.n_channels = n_channels
+        self.n_channels = in_channels
 
         self.mobilenet = self.__initialize_network()
 
@@ -34,13 +34,12 @@ class MobileNetV3S(nn.Module):
             for param in child.parameters():
                 param.requires_grad = False
 
-        mobilenet.classifier[-1] = nn.Linear(in_features=1024, out_features=self.n_channels, bias=True).requires_grad_(
-            True
-        )
+        mobilenet.classifier[-1] = nn.Linear(
+            in_features=1024, out_features=self.n_channels, bias=True
+        ).requires_grad_(True)
 
         return mobilenet.cuda()
 
 
 if __name__ == "__main__":
     model = MobileNetV3S(n_classes=3)
-    print(model)
