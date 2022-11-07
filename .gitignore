@@ -133,3 +133,6 @@ dmypy.json
 
 # Pycharm
 .idea/
+
+# Pytorch lightning logs
+lightning_logs/
