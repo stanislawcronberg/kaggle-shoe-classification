@@ -1,0 +1,12 @@
+data:
+  image_size: 240
+
+training:
+  learning_rate: 0.001
+  batch_size: 32
+  
+  trainer_kwargs:
+    accelerator: "gpu"
+    devices: 1
+    max_epochs: 10
+    precision: 16
