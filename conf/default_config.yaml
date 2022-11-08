@@ -1,12 +1,28 @@
 data:
-  image_size: 240
+
+  data_dir: "data/"
+  image_size: [240, 240]
+  n_classes: 3
+  in_channels: 3
 
 training:
-  learning_rate: 0.001
+
+  learning_rate: 0.0001
   batch_size: 32
-  
+  use_augmentations: true
+  use_early_stopping: true
+  early_stopping_kwargs:
+    monitor: "val_loss"
+    mode: min
+    min_delta: 0
+    patience: 10
+    verbose: true
+
   trainer_kwargs:
     accelerator: "gpu"
     devices: 1
-    max_epochs: 10
+    max_epochs: 100
     precision: 16
+    enable_checkpointing: true
+
+seed: 42
