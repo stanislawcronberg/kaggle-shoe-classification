@@ -27,7 +27,10 @@ class ShoeClassifier(pl.LightningModule):
         super().__init__()
 
         # Initialize model
-        self.model = EffNetV2S(n_classes=3, in_channels=3)
+        self.model = EffNetV2S(
+            n_classes=cfg.data.n_classes,
+            in_channels=cfg.data.in_channels,
+        )
 
         # Initialize loss
         self.loss = nn.CrossEntropyLoss()
