@@ -17,10 +17,10 @@ class MobileNetV3S(nn.Module):
         """Initialize the MobileNetV3S network.
 
         Returns:
-            nn.Module: MobileNetV3S network with pretrained weights
-
+            nn.Module: MobileNetV3S network with pretrained weights.
         """
         mobilenet = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.IMAGENET1K_V1)
+
         mobilenet.features[0][0] = nn.Conv2d(
             in_channels=self.n_channels,
             out_channels=16,
@@ -30,15 +30,18 @@ class MobileNetV3S(nn.Module):
             bias=False,
         )
 
+        # Freeze all layers
         for child in mobilenet.children():
             for param in child.parameters():
                 param.requires_grad = False
 
         mobilenet.classifier[-1] = nn.Linear(
-            in_features=1024, out_features=self.n_channels, bias=True
+            in_features=1024,
+            out_features=self.n_channels,
+            bias=True,
         ).requires_grad_(True)
 
-        return mobilenet.cuda()
+        return mobilenet
 
 
 if __name__ == "__main__":
