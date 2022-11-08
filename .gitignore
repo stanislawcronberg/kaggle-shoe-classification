@@ -136,3 +136,6 @@ dmypy.json
 
 # Pytorch lightning logs
 lightning_logs/
+
+# Hydra outputs
+outputs/
