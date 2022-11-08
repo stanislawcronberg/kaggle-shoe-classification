@@ -16,19 +16,24 @@ from torchvision.transforms import (
     ToTensor,
 )
 
-from src.datasets.shoe_dataset import FootwearDataset
-from src.datasets.utils import get_train_val_dataloaders
-from src.models import MobileNetV3S
+from datasets.config import ShoeCLFConfig
+from datasets.shoe_dataset import FootwearDataset
+from datasets.utils import get_train_val_dataloaders
+from models import EffNetV2S, MobileNetV3S
 
 
 class ShoeClassifier(pl.LightningModule):
-    def __init__(self, n_classes: int = 3):
+    def __init__(self, cfg: ShoeCLFConfig):
         super().__init__()
 
-        self.model = MobileNetV3S(n_classes=n_classes, in_channels=3)
+        # Initialize model
+        self.model = EffNetV2S(n_classes=3, in_channels=3)
+
+        # Initialize loss
         self.loss = nn.CrossEntropyLoss()
 
-        self.accuracy = torchmetrics.Accuracy(num_classes=n_classes, task="multiclass", top_k=1)
+        # Initialize metrics
+        self.accuracy = torchmetrics.Accuracy(num_classes=3, task="multiclass", top_k=1)
 
     def forward(self, x):
         return self.model(x)
