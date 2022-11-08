@@ -6,6 +6,35 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.data.sampler import SubsetRandomSampler
 
 
+def get_dataloader(
+    dataset: Dataset,
+    shuffle: bool,
+    batch_size: int,
+    n_workers: int,
+) -> DataLoader:
+    """Utility function for getting a dataloader.
+
+    Args:
+        dataset (Dataset): Dataset to use for the dataloader.
+        batch_size (int, optional): Batch size for the dataloader.
+        n_workers (int, optional): Number of workers for the dataloader.
+        random_seed (int, optional): Random seed for the dataloader.
+
+    Returns:
+        DataLoader: Dataloader for the dataset.
+    """
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=n_workers,
+        pin_memory=True,
+    )
+
+    return dataloader
+
+
 def get_train_val_dataloaders(
     dataset: Dataset,
     val_size: float = 0.2,
@@ -17,10 +46,10 @@ def get_train_val_dataloaders(
 
     Args:
         dataset (Dataset): Dataset to split into train and validation sets
-        val_size (float, optional): Proportion of dataset to use for validation. Defaults to 0.2.
-        batch_size (int, optional): Batch size for the dataloaders. Defaults to 32.
-        n_workers (int, optional): Number of workers for the dataloaders. Defaults to 8.
-        random_seed (int, optional): Random seed for the dataloaders. Defaults to 42.
+        val_size (float, optional): Proportion of dataset to use for validation.
+        batch_size (int, optional): Batch size for the dataloaders.
+        n_workers (int, optional): Number of workers for the dataloaders.
+        random_seed (int, optional): Random seed for the dataloaders.
 
     Returns:
         Tuple[DataLoader, DataLoader]: Train and validation dataloaders.
