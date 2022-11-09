@@ -1,4 +1,6 @@
 # Shoe Image Classification with PyTorch Lightning
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
 Practice project with small [Kaggle image dataset](https://www.kaggle.com/datasets/hasibalmuzdadid/shoe-vs-sandal-vs-boot-dataset-15k-images).
 
 ### Problem
