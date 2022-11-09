@@ -1,9 +1,15 @@
 data:
 
-  data_dir: "data/"
+  index:
+    train: "data/index/train.csv"
+    val: "data/index/val.csv"
+    test: "data/index/test.csv"
+
   image_size: [240, 240]
   n_classes: 3
   in_channels: 3
+
+model: "MobileNetV3S"  # One of ["EffNetV2S", "MobileNetV3S"]
 
 training:
 
@@ -24,5 +30,8 @@ training:
     max_epochs: 100
     precision: 16
     enable_checkpointing: true
+
+  num_workers: 8  # Number of workers for the dataloaders
+  pin_memory: bool  # Whether to pin memory in the dataloaders
 
 seed: 42

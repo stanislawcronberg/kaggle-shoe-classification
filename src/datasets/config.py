@@ -17,10 +17,13 @@ class Training:
     use_early_stopping: bool
     early_stopping_kwargs: dict
     trainer_kwargs: dict
+    num_workers: int
+    pin_memory: bool
 
 
 @dataclass
 class ShoeCLFConfig:
     data: Data
+    model: str
     training: Training
     seed: int
