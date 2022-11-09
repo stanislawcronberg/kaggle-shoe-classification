@@ -9,13 +9,19 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-def collate_image_paths_and_labels(data_dir: Path, output_dir: Path, output_filename: str) -> None:
+def collate_image_paths_and_labels(
+    data_dir: Path,
+    output_dir: Path,
+    output_filename: str,
+    target_name: str = "label",
+) -> None:
     """Create a csv file with the image paths and labels.
 
     Args:
         data_dir (Path): Path to the directory containing the images.
         output_dir (Path): Path to the directory where the csv file will be saved.
         output_filename (str): Name of the csv file.
+        target_name (str): Name of the target column for the csv file.
     """
     data_dir = Path(data_dir)
     output_dir = Path(output_dir)
@@ -24,16 +30,16 @@ def collate_image_paths_and_labels(data_dir: Path, output_dir: Path, output_file
     image_paths = [str(image_path) for image_path in data_dir.glob("**/*.jpg")]
     labels = [str(path).split(os.path.sep)[-2] for path in image_paths]
 
-    df = pd.DataFrame({"image_path": image_paths, "label": labels})
+    df = pd.DataFrame({"image_path": image_paths, target_name: labels})
     df.to_csv(output_dir / output_filename, index=False)
 
 
 def split_dataframe_into_train_val_test(
     df: pd.DataFrame,
+    output_dir: Path,
     train_size: float,
     val_size: float,
     test_size: float,
-    output_dir: Path,
 ) -> tuple:
     """Split a dataframe into train, validation, and test dataframes.
 
@@ -66,4 +72,10 @@ if __name__ == "__main__":
 
     df = pd.read_csv("data/shoe_dataset.csv")
 
-    split_dataframe_into_train_val_test(df, 0.8, 0.1, 0.1, "data/index")
+    split_dataframe_into_train_val_test(
+        dataframe=df,
+        output_dir="data/index",
+        train_size=0.8,
+        val_size=0.1,
+        test_size=0.1,
+    )
