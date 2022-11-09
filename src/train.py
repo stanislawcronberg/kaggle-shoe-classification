@@ -7,7 +7,7 @@ from torchvision.transforms import ColorJitter, Compose, RandomHorizontalFlip, R
 
 from datasets.config import ShoeCLFConfig
 from datasets.shoe_dataset import FootwearDataset
-from datasets.utils import get_train_val_dataloaders
+from datasets.utils import get_dataloader
 from models import ShoeClassifier
 
 
@@ -32,9 +32,31 @@ def train(cfg: ShoeCLFConfig) -> None:
     else:
         transforms = Compose([ToPILImage(), Resize(cfg.data.image_size), ToTensor()])
 
-    # Initialize dataset
-    dataset = FootwearDataset(data_dir=Path(cfg.data.data_dir), transform=transforms)
-    train_loader, val_loader = get_train_val_dataloaders(dataset, batch_size=cfg.training.batch_size)
+    # Initialize train dataset
+    train_dataset = FootwearDataset(index_path=cfg.data.index.train, transforms=transforms)
+
+    # Initialize val dataset
+    val_dataset = FootwearDataset(index_path=cfg.data.index.val, transforms=transforms)
+
+    # Initialize model
+    model = ShoeClassifier(cfg=cfg)
+
+    # Initialize dataloaders
+    train_loader = get_dataloader(
+        dataset=train_dataset,
+        batch_size=cfg.training.batch_size,
+        shuffle=True,
+        num_workers=cfg.training.num_workers,
+        pin_memory=cfg.training.pin_memory,
+    )
+
+    val_loader = get_dataloader(
+        dataset=val_dataset,
+        batch_size=cfg.training.batch_size,
+        shuffle=False,
+        num_workers=cfg.training.num_workers,
+        pin_memory=cfg.training.pin_memory,
+    )
 
     # Setup early stopping
     if cfg.training.use_early_stopping:
