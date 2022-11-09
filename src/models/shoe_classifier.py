@@ -19,24 +19,29 @@ from torchvision.transforms import (
 from datasets.config import ShoeCLFConfig
 from datasets.shoe_dataset import FootwearDataset
 from datasets.utils import get_train_val_dataloaders
-from models import EffNetV2S, MobileNetV3S
 
 
 class ShoeClassifier(pl.LightningModule):
     def __init__(self, cfg: ShoeCLFConfig):
         super().__init__()
 
-        # Initialize model
-        self.model = EffNetV2S(
-            n_classes=cfg.data.n_classes,
-            in_channels=cfg.data.in_channels,
-        )
+        # Initialize config
+        self.cfg = cfg
+
+        # Initialize backbone model dynamically
+        self.model = self.__initialize_model()
+
+        self.loss = nn.CrossEntropyLoss()
+        self.accuracy = torchmetrics.Accuracy()
 
         # Initialize loss
         self.loss = nn.CrossEntropyLoss()
 
         # Initialize metrics
         self.accuracy = torchmetrics.Accuracy(num_classes=3, task="multiclass", top_k=1)
+
+        # Save model hyperparameters
+        self.save_hyperparameters()
 
     def forward(self, x):
         return self.model(x)
@@ -69,7 +74,28 @@ class ShoeClassifier(pl.LightningModule):
         self.log("val_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
     def configure_optimizers(self):
-        return Adam(self.model.parameters(), lr=1e-3)
+        return Adam(self.model.parameters(), lr=self.cfg.training.learning_rate)
+
+    def __initialize_model(self):
+        """Initialize the model dynamically.
+
+        Returns:
+            nn.Module: Model with pretrained weights.
+        """
+
+        implemented_models = __import__("models.backbones")
+
+        # Check if model name exists in models/backbones
+        if not hasattr(implemented_models, self.cfg.model):
+            raise ValueError(f"Model {self.cfg.model} does not exist.")
+
+        # Initialize model dynamically
+        model = getattr(implemented_models, self.cfg.model)(
+            n_classes=self.cfg.data.n_classes,
+            in_channels=self.cfg.data.in_channels,
+        )
+
+        return model
 
 
 if __name__ == "__main__":
