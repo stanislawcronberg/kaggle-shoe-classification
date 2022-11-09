@@ -32,10 +32,8 @@ def train(cfg: ShoeCLFConfig) -> None:
     else:
         transforms = Compose([ToPILImage(), Resize(cfg.data.image_size), ToTensor()])
 
-    # Initialize train dataset
+    # Initialize train/val datasets
     train_dataset = FootwearDataset(index_path=cfg.data.index.train, transforms=transforms)
-
-    # Initialize val dataset
     val_dataset = FootwearDataset(index_path=cfg.data.index.val, transforms=transforms)
 
     # Initialize model
