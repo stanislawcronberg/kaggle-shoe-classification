@@ -8,17 +8,19 @@ from torch.utils.data.sampler import SubsetRandomSampler
 
 def get_dataloader(
     dataset: Dataset,
-    shuffle: bool,
     batch_size: int,
-    n_workers: int,
+    shuffle: bool,
+    num_workers: int,
+    pin_memory: bool,
 ) -> DataLoader:
     """Utility function for getting a dataloader.
 
     Args:
         dataset (Dataset): Dataset to use for the dataloader.
-        batch_size (int, optional): Batch size for the dataloader.
-        n_workers (int, optional): Number of workers for the dataloader.
-        random_seed (int, optional): Random seed for the dataloader.
+        batch_size (int): Batch size for the dataloader.
+        shuffle (bool): Whether to shuffle the dataset.
+        num_workers (int): Number of workers for the dataloader.
+        pin_memory (bool): Whether to pin memory for the dataloader.
 
     Returns:
         DataLoader: Dataloader for the dataset.
@@ -28,8 +30,8 @@ def get_dataloader(
         dataset,
         batch_size=batch_size,
         shuffle=shuffle,
-        num_workers=n_workers,
-        pin_memory=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
     )
 
     return dataloader
@@ -39,8 +41,9 @@ def get_train_val_dataloaders(
     dataset: Dataset,
     val_size: float = 0.2,
     batch_size: int = 32,
-    n_workers: int = 8,
+    num_workers: int = 8,
     random_seed: int = 42,
+    pin_memory: bool = True,
 ) -> Tuple[DataLoader, DataLoader]:
     """Utility function for splitting a dataset into train and validation sets.
 
@@ -48,7 +51,7 @@ def get_train_val_dataloaders(
         dataset (Dataset): Dataset to split into train and validation sets
         val_size (float, optional): Proportion of dataset to use for validation.
         batch_size (int, optional): Batch size for the dataloaders.
-        n_workers (int, optional): Number of workers for the dataloaders.
+        num_workers (int, optional): Number of workers for the dataloaders.
         random_seed (int, optional): Random seed for the dataloaders.
 
     Returns:
@@ -72,15 +75,15 @@ def get_train_val_dataloaders(
         dataset,
         batch_size=batch_size,
         sampler=train_sampler,
-        num_workers=n_workers,
-        pin_memory=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
     )
     validation_loader = torch.utils.data.DataLoader(
         dataset,
         batch_size=batch_size,
         sampler=valid_sampler,
-        num_workers=n_workers,
-        pin_memory=True,
+        num_workers=num_workers,
+        pin_memory=pin_memory,
     )
 
     return train_loader, validation_loader

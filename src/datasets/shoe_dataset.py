@@ -1,7 +1,8 @@
-import os
 from pathlib import Path
+from typing import Union
 
 import numpy as np
+import pandas as pd
 import torch
 from skimage.io import imread
 from sklearn.preprocessing import OneHotEncoder
@@ -9,9 +10,15 @@ from torch.utils.data import Dataset
 
 
 class FootwearDataset(Dataset):
-    def __init__(self, data_dir: Path, transform, device=None):
-        self.image_paths, self.labels = self.__initialize_filepaths_and_labels(data_dir)
-        self.transform = transform
+    def __init__(self, index_path: Union[str, Path], transforms, device=None):
+
+        # Read the index
+        self.index = pd.read_csv(index_path)
+
+        # Initialize filepaths and labels
+        self.image_paths, self.labels = self.__initialize_filepaths_and_labels()
+
+        self.transforms = transforms
         self.device = device
 
         # Encode labels
@@ -30,8 +37,8 @@ class FootwearDataset(Dataset):
         label = self.labels[index]
         label = torch.tensor(label, dtype=torch.float32)
 
-        if self.transform:
-            image = self.transform(image)
+        if self.transforms:
+            image = self.transforms(image)
 
         if self.device is not None:
             image = image.to(self.device)
@@ -39,9 +46,8 @@ class FootwearDataset(Dataset):
 
         return image, label
 
-    @staticmethod
-    def __initialize_filepaths_and_labels(data_dir: Path) -> tuple[list[Path], np.ndarray]:
-        image_paths = [image_path for image_path in data_dir.glob("**/*.jpg")]
-        labels = np.array([str(path).split(os.path.sep)[-2] for path in image_paths]).reshape(-1, 1)
+    def __initialize_filepaths_and_labels(self) -> tuple[list[Path], np.ndarray]:
+        image_paths = self.index["image_path"].values
+        labels = self.index["label"].values.reshape(-1, 1)
 
         return image_paths, labels
