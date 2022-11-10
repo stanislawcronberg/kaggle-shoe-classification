@@ -22,17 +22,17 @@ if __name__ == "__main__":
     # Setup train and validation datasets from the index csv files
     train_data = FootwearDataset(index_path=Path("data/index/train.csv"), transform=transforms)
     val_data = FootwearDataset(index_path=Path("data/index/val.csv"), transform=transforms)
+    test_data = FootwearDataset(index_path=Path("data/index/test.csv"), transform=transforms)
 
     # Setup training hyperparameters
-    epochs = 5
+    num_epochs = 5
     learning_rate = 0.001
     batch_size = 32
 
     # Setup train and validation dataloaders from the datasets with get_data_loader utility function
-    train_loader = get_dataloader(
-        dataset=train_data, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=None
-    )
-    val_loader = get_dataloader(dataset=val_data, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=None)
+    train_loader = get_dataloader(train_data, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=None)
+    val_loader = get_dataloader(val_data, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=None)
+    test_loader = get_dataloader(test_data, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=None)
 
     # Setup model, loss function, and optimizer
     model = MobileNetV3S(n_classes=3, in_channels=3).to(device)  # Note: We move the model to the device
@@ -51,7 +51,9 @@ if __name__ == "__main__":
     # Inspect what mode the model is in
     print("Model mode:", "train" if model.training else "eval")
 
-    for epoch in range(epochs):  # 1 iteration = 1 epoch
+    for epoch in range(num_epochs):  # 1 iteration = 1 epoch
+
+        model.train()  # Set model to train mode
 
         running_loss = 0.0
         for i, data in enumerate(pbar := tqdm(train_loader), 0):
@@ -89,6 +91,24 @@ if __name__ == "__main__":
                 pbar.set_description(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 10:.3f}")
                 running_loss = 0.0
 
+        model.eval()
+        running_val_loss = 0.0
+
+        with torch.no_grad():  # We don't need to compute gradients in the validation loop
+            for i, data in enumerate(pbar := tqdm(val_loader), 0):
+
+                images, labels = data
+                images = images.to(device)
+                labels = labels.to(device)
+
+                outputs = model(images)
+                val_loss = criterion(outputs, labels)
+
+                running_val_loss += val_loss.item()
+                if i % 10 == 0:
+                    pbar.set_description(f"[{epoch + 1}, {i + 1:5d}] val_loss: {running_val_loss / 10:.3f}")
+                    running_val_loss = 0.0
+
     """Evaluation of the model.
 
     We use the torch.no_grad() context manager to tell PyTorch that we don't need to track the gradients.
@@ -104,7 +124,7 @@ if __name__ == "__main__":
 
     model.eval()
     with torch.no_grad():
-        for data in tqdm(val_loader, desc="Evaluating"):
+        for data in tqdm(test_loader, desc="Evaluating"):
 
             # Get inputs and labels from the dataloader and push them to the device
             images, labels = data
