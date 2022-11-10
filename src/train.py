@@ -36,9 +36,6 @@ def train(cfg: ShoeCLFConfig) -> None:
     train_dataset = FootwearDataset(index_path=cfg.data.index.train, transform=transforms)
     val_dataset = FootwearDataset(index_path=cfg.data.index.val, transform=transforms)
 
-    # Initialize model
-    model = ShoeClassifier(cfg=cfg)
-
     # Initialize dataloaders
     train_loader = get_dataloader(
         dataset=train_dataset,
