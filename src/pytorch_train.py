@@ -30,9 +30,9 @@ if __name__ == "__main__":
     batch_size = 32
 
     # Setup train and validation dataloaders from the datasets with get_data_loader utility function
-    train_loader = get_dataloader(train_data, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=None)
-    val_loader = get_dataloader(val_data, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=None)
-    test_loader = get_dataloader(test_data, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=None)
+    train_loader = get_dataloader(train_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=None)
+    val_loader = get_dataloader(val_data, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=None)
+    test_loader = get_dataloader(test_data, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=None)
 
     # Setup model, loss function, and optimizer
     model = MobileNetV3S(n_classes=3, in_channels=3).to(device)  # Note: We move the model to the device
