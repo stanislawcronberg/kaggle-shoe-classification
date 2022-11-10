@@ -32,10 +32,6 @@ class ShoeClassifier(pl.LightningModule):
         self.model = self.__initialize_model()
 
         self.loss = nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.Accuracy()
-
-        # Initialize loss
-        self.loss = nn.CrossEntropyLoss()
 
         # Initialize metrics
         self.accuracy = torchmetrics.Accuracy(num_classes=3, task="multiclass", top_k=1)
