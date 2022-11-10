@@ -37,7 +37,7 @@ class MobileNetV3S(nn.Module):
 
         mobilenet.classifier[-1] = nn.Linear(
             in_features=1024,
-            out_features=self.n_channels,
+            out_features=self.n_classes,
             bias=True,
         ).requires_grad_(True)
 
