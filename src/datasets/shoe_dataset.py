@@ -44,6 +44,6 @@ class FootwearDataset(Dataset):
 
     def __initialize_filepaths_and_labels(self) -> tuple[list[Path], np.ndarray]:
         image_paths = self.index["image_path"].values
-        labels = self.index["label"].values.reshape(-1, 1)
+        labels = self.index["label"].values.reshape(-1, 1)  # Reshape to 2D array
 
         return image_paths, labels
