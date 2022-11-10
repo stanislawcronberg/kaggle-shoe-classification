@@ -10,16 +10,23 @@ from torch.utils.data import Dataset
 
 
 class FootwearDataset(Dataset):
-    def __init__(self, index_path: Union[str, Path], transforms, device=None):
+    def __init__(
+        self,
+        index_path: Union[str, Path],
+        root_data_dir: Union[str, Path],
+        transforms,
+    ):
 
-        # Read the index
+        # Read the index and setup data dir
         self.index = pd.read_csv(index_path)
+
+        # Path to parent of the data directory
+        self.root_data_dir = Path(root_data_dir)
 
         # Initialize filepaths and labels
         self.image_paths, self.labels = self.__initialize_filepaths_and_labels()
 
         self.transforms = transforms
-        self.device = device
 
         # Encode labels
         self.labels_encoder = OneHotEncoder(sparse=False)
@@ -32,22 +39,20 @@ class FootwearDataset(Dataset):
     def __getitem__(self, index):
 
         image_path = self.image_paths[index]
-        image = imread(str(image_path))
+        image = imread(str(image_path)).astype(np.float32) / 255.0  # Read image and normalize
 
         label = self.labels[index]
         label = torch.tensor(label, dtype=torch.float32)
 
         if self.transforms:
-            image = self.transforms(image)
-
-        if self.device is not None:
-            image = image.to(self.device)
-            label = label.to(self.device)
+            # Take ["image"] to get the image from the albumentations output
+            image = self.transforms(image=image)["image"]
 
         return image, label
 
     def __initialize_filepaths_and_labels(self) -> tuple[list[Path], np.ndarray]:
-        image_paths = self.index["image_path"].values
-        labels = self.index["label"].values.reshape(-1, 1)
+        image_paths = self.index["image_path"].values  # .values returns a numpy array of the filepaths
+        image_paths = np.array([str(self.root_data_dir / image_path) for image_path in image_paths])
+        labels = self.index["label"].values.reshape(-1, 1)  # Reshape to add a dimension
 
         return image_paths, labels
