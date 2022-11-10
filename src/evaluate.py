@@ -22,7 +22,7 @@ def evaluate(cfg: ShoeCLFConfig) -> None:
     transforms = Compose([ToPILImage(), Resize(cfg.data.image_size), ToTensor()])
 
     # Initialize test dataset
-    test_dataset = FootwearDataset(index_path=cfg.data.index.test, transforms=transforms)
+    test_dataset = FootwearDataset(index_path=cfg.data.index.test, transform=transforms)
 
     # Initialize model
     model = ShoeClassifier(cfg=cfg)

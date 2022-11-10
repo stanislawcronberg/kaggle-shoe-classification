@@ -10,7 +10,7 @@ from torch.utils.data import Dataset
 
 
 class FootwearDataset(Dataset):
-    def __init__(self, index_path: Union[str, Path], transforms, device=None):
+    def __init__(self, index_path: Union[str, Path], transform):
 
         # Read the index
         self.index = pd.read_csv(index_path)
@@ -18,8 +18,7 @@ class FootwearDataset(Dataset):
         # Initialize filepaths and labels
         self.image_paths, self.labels = self.__initialize_filepaths_and_labels()
 
-        self.transforms = transforms
-        self.device = device
+        self.transform = transform
 
         # Encode labels
         self.labels_encoder = OneHotEncoder(sparse=False)
@@ -32,17 +31,14 @@ class FootwearDataset(Dataset):
     def __getitem__(self, index):
 
         image_path = self.image_paths[index]
-        image = imread(str(image_path))
+        image = imread(str(image_path)).astype(np.float32) / 255.0  # Read image and normalize
+        image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1)  # Convert to tensor and permute
 
         label = self.labels[index]
         label = torch.tensor(label, dtype=torch.float32)
 
-        if self.transforms:
-            image = self.transforms(image)
-
-        if self.device is not None:
-            image = image.to(self.device)
-            label = label.to(self.device)
+        if self.transform:
+            image = self.transform(image)
 
         return image, label
 

@@ -31,11 +31,12 @@ def collate_image_paths_and_labels(
     labels = [str(path).split(os.path.sep)[-2] for path in image_paths]
 
     df = pd.DataFrame({"image_path": image_paths, target_name: labels})
-    df.to_csv(output_dir / output_filename, index=False)
+
+    return df
 
 
 def split_dataframe_into_train_val_test(
-    df: pd.DataFrame,
+    dataframe: pd.DataFrame,
     output_dir: Path,
     train_size: float,
     val_size: float,
@@ -51,7 +52,12 @@ def split_dataframe_into_train_val_test(
     """
 
     # Split df into train, validation, and test dataframes stratified by label
-    train_df, val_test_df = train_test_split(df, train_size=train_size, random_state=42, stratify=df["label"])
+    train_df, val_test_df = train_test_split(
+        dataframe,
+        train_size=train_size,
+        random_state=42,
+        stratify=dataframe["label"],
+    )
     val_df, test_df = train_test_split(
         val_test_df,
         train_size=val_size / (val_size + test_size),
@@ -68,12 +74,9 @@ def split_dataframe_into_train_val_test(
 
 
 if __name__ == "__main__":
-    collate_image_paths_and_labels("data", "data/index", "shoe_dataset.csv")
-
-    df = pd.read_csv("data/shoe_dataset.csv")
 
     split_dataframe_into_train_val_test(
-        dataframe=df,
+        dataframe=collate_image_paths_and_labels("data", "data/index", "shoe_dataset.csv"),
         output_dir="data/index",
         train_size=0.8,
         val_size=0.1,

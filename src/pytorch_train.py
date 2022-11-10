@@ -3,66 +3,126 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 from torch.optim import Adam
-from torchvision.transforms import Resize
+from torchvision.transforms import Compose, Resize, ToPILImage, ToTensor
 from tqdm import tqdm
 
-from datasets.shoe_dataset import FootwearDataset, get_train_val_dataloaders
+from datasets.shoe_dataset import FootwearDataset
+from datasets.utils import get_dataloader
 from models import MobileNetV3S
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
+print("Device: ", device)
 
 
 if __name__ == "__main__":
 
-    dataset = FootwearDataset(data_dir=Path("data"), transform=Resize((128, 128)), device=device)
+    # Setup transforms
+    transforms = Compose([ToPILImage(), Resize(size=(128, 128)), ToTensor()])
 
-    train_loader, val_loader = get_train_val_dataloaders(dataset=dataset, val_size=0.2)
+    # Setup train and validation datasets from the index csv files
+    train_data = FootwearDataset(index_path=Path("data/index/train.csv"), transform=transforms)
+    val_data = FootwearDataset(index_path=Path("data/index/val.csv"), transform=transforms)
 
-    mobilenet = MobileNetV3S(n_classes=3, in_channels=3)
+    # Setup training hyperparameters
+    epochs = 5
+    learning_rate = 0.001
+    batch_size = 32
 
-    optimizer = Adam(mobilenet.parameters(), lr=0.001)
+    # Setup train and validation dataloaders from the datasets with get_data_loader utility function
+    train_loader = get_dataloader(
+        dataset=train_data, batch_size=batch_size, shuffle=True, num_workers=1, pin_memory=None
+    )
+    val_loader = get_dataloader(dataset=val_data, batch_size=batch_size, shuffle=False, num_workers=1, pin_memory=None)
 
+    # Setup model, loss function, and optimizer
+    model = MobileNetV3S(n_classes=3, in_channels=3).to(device)  # Note: We move the model to the device
     criterion = nn.CrossEntropyLoss()
+    optimizer = Adam(params=model.parameters(), lr=learning_rate)  # Note: We pass the model parameters to the optimizer
 
-    num_epochs = 20
+    """Training loop of the model.
 
-    for epoch in tqdm(range(3)):  # loop over the dataset multiple times
+    We use the tqdm library to create a progress bar for the training loop.
+    Using plain PyTorch, we have to implement the training loop ourselves.
+
+    We have to call model.train() before training and model.eval() before evaluation.
+    By default the model mode is set to train, so we don't have to call model.train() before training.
+    """
+
+    # Inspect what mode the model is in
+    print("Model mode:", "train" if model.training else "eval")
+
+    for epoch in range(epochs):  # 1 iteration = 1 epoch
 
         running_loss = 0.0
-        for i, data in enumerate(train_loader, 0):
-            # get the inputs; data is a list of [inputs, labels]
-            inputs, labels = data
+        for i, data in enumerate(pbar := tqdm(train_loader), 0):
+            # Get images and labels from the dataloader
+            images, labels = data
 
-            # zero the parameter gradients
+            # Push images and labels to the device
+            images = images.to(device)
+            labels = labels.to(device)
+
+            """
+            We call optimizer.zero_grad() to reset the gradients of the model parameters
+            before computing the gradients of the current batch
+            Otherwise, the gradients will be accumulated
+            (i.e. the gradients of the current batch will be added to the gradients of the previous batch)
+
+            This is not what we want because we want to compute the gradients of the current batch only
+            We call optimizer.zero_grad() before the forward pass
+            """
             optimizer.zero_grad()
 
-            # forward + backward + optimize
-            outputs = mobilenet(inputs.to(device))
-            loss = criterion(outputs, labels.to(device))
+            # Forward pass
+            outputs = model(images)
+
+            # Compute loss
+            loss = criterion(outputs, labels)
+
+            # Backward pass and gradient descent update step
             loss.backward()
             optimizer.step()
 
-            # print statistics
+            # Print the loss every 10 mini-batches
             running_loss += loss.item()
-            if i % 10 == 0:  # print every 2000 mini-batches
-                print(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 10:.3f}")
+            if i % 10 == 0:
+                pbar.set_description(f"[{epoch + 1}, {i + 1:5d}] loss: {running_loss / 10:.3f}")
                 running_loss = 0.0
 
-    # evaluate
+    """Evaluation of the model.
+
+    We use the torch.no_grad() context manager to tell PyTorch that we don't need to track the gradients.
+
+    Also we call model.eval() to tell PyTorch that we are in evaluation mode. This is important because some layers
+    like dropout or batch normalization behave differently during training and evaluation.
+
+    - We don't want to use dropout during evaluation.
+    - Batch normalization doesn't use the running mean and variance during training.
+    """
     correct = 0
     total = 0
-    # since we're not training, we don't need to calculate the gradients for our outputs
+
+    model.eval()
     with torch.no_grad():
-        for data in val_loader:
+        for data in tqdm(val_loader, desc="Evaluating"):
+
+            # Get inputs and labels from the dataloader and push them to the device
             images, labels = data
-            labels = labels.to(device)
-            labels = torch.argmax(labels, dim=1)
             images = images.to(device)
+            labels = labels.to(device)
+
+            # Convert one-hot encoded labels to class indices
+            labels = torch.argmax(labels, dim=1)
+
             # calculate outputs by running images through the network
-            outputs = mobilenet(images)
+            outputs = model(images)
+
             # the class with the highest energy is what we choose as prediction
             predicted = torch.argmax(outputs.data, dim=1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
+
+            total += labels.size(0)  # Increment total by the batch size (first dimension of the tensor)
+            correct += (predicted == labels).sum().item()  # item() extracts the value from the tensor
+
+    model.train()  # Not necessary, but good practice to set the model back to train mode
 
     print(f"Accuracy of the network on the validation images: {100 * correct // total} %")
