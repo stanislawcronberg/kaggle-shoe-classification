@@ -1,6 +1,12 @@
 """Given a directory of images, create a pandas dataframe with the image paths and labels.
 
 This larger csv file can then be split into separate train, validation, and test csv files.
+
+There is an argument to be made that this makes the code more complicated, but it makes the
+split into train, validation, and test dataframes more difficult to modify by accident.
+
+Additionally if using some sort of experiment tracking, it is much easier to track the index files
+compare to storing different versions of the image files in different directories.
 """
 import os
 from pathlib import Path
@@ -12,7 +18,6 @@ from sklearn.model_selection import train_test_split
 def collate_image_paths_and_labels(
     data_dir: Path,
     output_dir: Path,
-    output_filename: str,
     target_name: str = "label",
 ) -> None:
     """Create a csv file with the image paths and labels.
@@ -20,7 +25,6 @@ def collate_image_paths_and_labels(
     Args:
         data_dir (Path): Path to the directory containing the images.
         output_dir (Path): Path to the directory where the csv file will be saved.
-        output_filename (str): Name of the csv file.
         target_name (str): Name of the target column for the csv file.
     """
     data_dir = Path(data_dir)
