@@ -71,8 +71,13 @@ def split_dataframe_into_train_val_test(
 
 if __name__ == "__main__":
 
+    # Create the full dataframe with image paths and labels and save it to a csv file
+    full_df = collate_image_paths_and_labels(data_dir=Path("data/images"), output_dir=Path("data"))
+    full_df.to_csv(Path("data/full.csv"), index=False)
+
+    # Split the full dataframe into train, validation, and test dataframes and save them to csv files
     split_dataframe_into_train_val_test(
-        dataframe=collate_image_paths_and_labels("data", "data/index", "shoe_dataset.csv"),
+        dataframe=full_df,
         output_dir="data/index",
         train_size=0.8,
         val_size=0.1,
