@@ -60,7 +60,7 @@
     "python.linting.pydocstyleEnabled": true,
     "python.linting.pydocstyleArgs": [
         // Using plain "--ignore" instead of "--add-ignore" reverts default ignored rules
-        "--add-ignore=D100,D101,D102,D103,D104,D105,D106,D107,D202,D401", // Ignore enforcing docstrings everywhere
+        "--add-ignore=D100,D101,D102,D103,D104,D105,D106,D107,D202,D401", // Ignore annoying rules
     ],
     "python.analysis.typeCheckingMode": "off", // Disable type checking, usually incorrect and quite annoying
 }
