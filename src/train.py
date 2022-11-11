@@ -1,9 +1,9 @@
 from pathlib import Path
 
+import albumentations as A
 import hydra
 import pytorch_lightning as pl
-from lightning_lite.utilities.seed import seed_everything
-from torchvision.transforms import ColorJitter, Compose, RandomHorizontalFlip, Resize, ToPILImage, ToTensor
+from albumentations.pytorch import ToTensorV2
 
 from datasets.config import ShoeCLFConfig
 from datasets.shoe_dataset import FootwearDataset
@@ -14,27 +14,27 @@ from models import ShoeClassifier
 @hydra.main(config_path=Path("../conf"), config_name="default_config", version_base="1.2.0")
 def train(cfg: ShoeCLFConfig) -> None:
 
-    # Set seed
-    if cfg.seed:
-        seed_everything(cfg.seed)
-
     # Setup transforms
     if cfg.training.use_augmentations:
-        transforms = Compose(
+        transforms = A.Compose(
             [
-                ToPILImage(),
-                Resize(size=cfg.data.image_size),
-                RandomHorizontalFlip(),
-                ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.5),
-                ToTensor(),
+                A.Resize(*cfg.data.image_size),
+                A.ColorJitter(brightness=0.4, contrast=0.4, p=0.5),
+                A.Rotate(limit=30, p=0.5),
+                A.GaussianBlur(blur_limit=(3, 5), p=0.5),
+                A.HorizontalFlip(p=0.5),
+                A.CoarseDropout(max_holes=5, max_height=8, max_width=8, p=0.4),
+                ToTensorV2(),
             ]
         )
     else:
-        transforms = Compose([ToPILImage(), Resize(cfg.data.image_size), ToTensor()])
+        transforms = A.Compose([A.Resize(*cfg.data.image_size), ToTensorV2()])
 
-    # Initialize train/val datasets
-    train_dataset = FootwearDataset(index_path=cfg.data.index.train, transforms=transforms)
-    val_dataset = FootwearDataset(index_path=cfg.data.index.val, transforms=transforms)
+    # Initialize train dataset
+    train_dataset = FootwearDataset(index_path=cfg.data.index.train, root_data_dir=".", transforms=transforms)
+
+    # Initialize val dataset
+    val_dataset = FootwearDataset(index_path=cfg.data.index.val, root_data_dir=".", transforms=transforms)
 
     # Initialize model
     model = ShoeClassifier(cfg=cfg)
