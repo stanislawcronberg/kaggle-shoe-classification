@@ -13,7 +13,7 @@ model: "MobileNetV3S"  # One of ["EffNetV2S", "MobileNetV3S"]
 
 training:
 
-  learning_rate: 0.0001
+  learning_rate: 0.00005
   batch_size: 32
   use_augmentations: true
   use_early_stopping: true
@@ -24,6 +24,7 @@ training:
     patience: 10
     verbose: true
 
+  # Arguments for the Lightning Trainer class
   trainer_kwargs:
     accelerator: "gpu"
     devices: 1
@@ -31,11 +32,25 @@ training:
     precision: 16
     enable_checkpointing: true
 
+  # Arguments for the training dataloader
+  dataloader_kwargs:
+    batch_size: 32
+    shuffle: true
+    num_workers: 8
+    pin_memory: false
+
+
   num_workers: 8  # Number of workers for the dataloaders
   pin_memory: bool  # Whether to pin memory in the dataloaders
 
 eval:
-  batch_size: 32
   ckpt_path: "/home/scronberg/Documents/GitHub/shoe-sandal-boot-clf-pytorch/lightning_logs/version_33/checkpoints/epoch=47-step=18000.ckpt"  # Path to model checkpoint
+
+  # Arguments for the validation/test dataloaders
+  dataloader_kwargs:
+    batch_size: 64
+    shuffle: false
+    num_workers: 8
+    pin_memory: false
 
 seed: 42

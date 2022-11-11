@@ -14,6 +14,7 @@ class EffNetV2S(nn.Module):
             for param in child.parameters():
                 param.requires_grad = False
 
+        # Replace classifier head with new one with correct number of output classes
         self.model.classifier[-1] = nn.Linear(in_features=1280, out_features=n_classes)
 
     def forward(self, x):

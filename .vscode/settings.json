@@ -20,7 +20,7 @@
     "python.formatting.provider": "black",
     "editor.formatOnSaveMode": "file", // "modifications" does not work with black
     "python.formatting.blackArgs": [
-        "--line-length=110",
+        "--line-length=120",
         // "--fast" // Uncomment for faster formatting, ommits an AST sanity check
         // "--exclude=INSERT_FILE_OR_FOLDER" // Exclude files or folders from formatting (such as venv or other)
     ],
@@ -35,7 +35,7 @@
     "python.linting.flake8Args": [
         "--per-file-ignores=__init__.py:F401", //Ignores the rule only in the specified file/files
         "--ignore=E999", // Populate with rules to ignore
-        "--max-line-length=110"
+        "--max-line-length=120"
     ],
     //
     // IMPORT SORTING (ISORT)
@@ -46,7 +46,7 @@
     "isort.importStrategy": "fromEnvironment", // Prefers isort found in the environment over extension
     "isort.args": [
         "--profile=black",
-        "--line-length=110",
+        "--line-length=120",
     ],
     "[python]": {
         "editor.codeActionsOnSave": {

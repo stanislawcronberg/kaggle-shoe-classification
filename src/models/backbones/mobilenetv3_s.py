@@ -46,3 +46,4 @@ class MobileNetV3S(nn.Module):
 
 if __name__ == "__main__":
     model = MobileNetV3S(n_classes=3)
+    print(model)
