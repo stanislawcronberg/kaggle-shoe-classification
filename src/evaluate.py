@@ -3,11 +3,11 @@ from pathlib import Path
 import hydra
 import pytorch_lightning as pl
 from lightning_lite.utilities.seed import seed_everything
+from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Resize, ToPILImage, ToTensor
 
 from datasets.config import ShoeCLFConfig
 from datasets.shoe_dataset import FootwearDataset
-from datasets.utils import get_dataloader
 from models import ShoeClassifier
 
 
@@ -28,18 +28,10 @@ def evaluate(cfg: ShoeCLFConfig) -> None:
     model = ShoeClassifier(cfg=cfg)
 
     # Initialize dataloader
-    test_loader = get_dataloader(
-        dataset=test_dataset,
-        batch_size=cfg.training.batch_size,
-        shuffle=False,
-        num_workers=cfg.training.num_workers,
-        pin_memory=cfg.training.pin_memory,
-    )
+    test_loader = DataLoader(test_dataset, **cfg.eval.dataloader_kwargs)
 
     # Setup trainer
-    trainer = pl.Trainer(
-        **cfg.training.trainer_kwargs,
-    )
+    trainer = pl.Trainer(**cfg.training.trainer_kwargs)
 
     # Evaluate model
     trainer.test(
