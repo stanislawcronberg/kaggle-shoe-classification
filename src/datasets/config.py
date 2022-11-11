@@ -12,19 +12,17 @@ class Data:
 @dataclass
 class Training:
     learning_rate: float
-    batch_size: int
     use_augmentations: bool
     use_early_stopping: bool
     early_stopping_kwargs: dict
     trainer_kwargs: dict
-    num_workers: int
-    pin_memory: bool
+    dataloader_kwargs: dict
 
 
 @dataclass
 class Eval:
-    batch_size: int
     ckpt_path: str  # Path to model checkpoint
+    dataloader_kwargs: dict
 
 
 @dataclass
@@ -32,4 +30,5 @@ class ShoeCLFConfig:
     data: Data
     model: str
     training: Training
+    eval: Eval
     seed: int
