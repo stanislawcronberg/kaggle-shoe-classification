@@ -34,4 +34,8 @@ training:
   num_workers: 8  # Number of workers for the dataloaders
   pin_memory: bool  # Whether to pin memory in the dataloaders
 
+eval:
+  batch_size: 32
+  ckpt_path: "/home/scronberg/Documents/GitHub/shoe-sandal-boot-clf-pytorch/lightning_logs/version_33/checkpoints/epoch=47-step=18000.ckpt"  # Path to model checkpoint
+
 seed: 42
