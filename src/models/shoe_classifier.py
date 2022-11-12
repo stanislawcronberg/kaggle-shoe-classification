@@ -59,6 +59,18 @@ class ShoeClassifier(pl.LightningModule):
         self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log("val_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
 
+    def test_step(self, batch, batch_idx):
+        images, labels = batch
+        logits = self.model(images)
+        loss = self.loss(logits, labels)
+
+        preds = torch.argmax(logits, dim=1).int()
+        int_labels = torch.argmax(labels, dim=1).int()
+        acc = self.accuracy(preds, int_labels)
+
+        self.log("test_loss", loss, logger=True)
+        self.log("test_acc", acc, logger=True)
+
     def configure_optimizers(self):
         return Adam(self.model.parameters(), lr=self.cfg.training.learning_rate)
 
