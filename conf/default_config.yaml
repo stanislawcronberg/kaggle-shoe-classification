@@ -44,7 +44,7 @@ training:
   pin_memory: bool  # Whether to pin memory in the dataloaders
 
 eval:
-  ckpt_path: "/home/scronberg/Documents/GitHub/shoe-sandal-boot-clf-pytorch/lightning_logs/version_33/checkpoints/epoch=47-step=18000.ckpt"  # Path to model checkpoint
+  ckpt_path: "/home/scronberg/Documents/GitHub/shoe-sandal-boot-clf-pytorch/lightning_logs/version_4/checkpoints/epoch=3-step=1500.ckpt"  # Path to model checkpoint
 
   # Arguments for the validation/test dataloaders
   dataloader_kwargs:

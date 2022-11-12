@@ -1,10 +1,11 @@
 from pathlib import Path
 
+import albumentations as A
 import hydra
 import pytorch_lightning as pl
+from albumentations.pytorch import ToTensorV2
 from lightning_lite.utilities.seed import seed_everything
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, Resize, ToPILImage, ToTensor
 
 from datasets.config import ShoeCLFConfig
 from datasets.shoe_dataset import FootwearDataset
@@ -19,10 +20,10 @@ def evaluate(cfg: ShoeCLFConfig) -> None:
         seed_everything(cfg.seed)
 
     # Setup transforms for evaluation
-    transforms = Compose([ToPILImage(), Resize(cfg.data.image_size), ToTensor()])
+    transforms = A.Compose([A.Resize(*cfg.data.image_size), ToTensorV2()])
 
     # Initialize test dataset
-    test_dataset = FootwearDataset(index_path=cfg.data.index.test, transforms=transforms)
+    test_dataset = FootwearDataset(index_path=cfg.data.index.test, root_data_dir=Path("."), transforms=transforms)
 
     # Initialize model
     model = ShoeClassifier(cfg=cfg)
@@ -36,8 +37,8 @@ def evaluate(cfg: ShoeCLFConfig) -> None:
     # Evaluate model
     trainer.test(
         model=model,
-        test_dataloaders=test_loader,
-        ckpts_path=cfg.eval.ckpt_path,
+        dataloaders=test_loader,
+        ckpt_path=cfg.eval.ckpt_path,
     )
 
 
