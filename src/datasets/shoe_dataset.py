@@ -39,7 +39,7 @@ class FootwearDataset(Dataset):
     def __getitem__(self, index):
 
         image_path = self.image_paths[index]
-        image = imread(str(image_path)).astype(np.float32) / 255.0  # Read image and normalize
+        image = imread(str(image_path)).astype(np.float32) / 255.0  # Read image and normalize to [0, 1]
 
         label = self.labels[index]
         label = torch.tensor(label, dtype=torch.float32)
