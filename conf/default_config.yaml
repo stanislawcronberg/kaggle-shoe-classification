@@ -13,7 +13,7 @@ model: "MobileNetV3S"  # One of ["EffNetV2S", "MobileNetV3S"]
 
 training:
 
-  learning_rate: 0.00005
+  learning_rate: 3e-4  # Karpathy constant :)
   batch_size: 32
   use_augmentations: true
   use_early_stopping: true
@@ -29,7 +29,7 @@ training:
     accelerator: "gpu"
     devices: 1
     max_epochs: 100
-    precision: 16
+    precision: 32  # Floating point precision
     enable_checkpointing: true
 
   # Arguments for the training dataloader

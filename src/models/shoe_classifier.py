@@ -10,6 +10,7 @@ from datasets.config import ShoeCLFConfig
 class ShoeClassifier(pl.LightningModule):
     def __init__(self, cfg: ShoeCLFConfig):
         super().__init__()
+        self.save_hyperparameters()
 
         # Initialize config
         self.cfg = cfg
@@ -17,17 +18,11 @@ class ShoeClassifier(pl.LightningModule):
         # Initialize backbone model dynamically
         self.model = self.__initialize_model()
 
-        self.loss = nn.CrossEntropyLoss()
-        self.accuracy = torchmetrics.Accuracy()
-
         # Initialize loss
         self.loss = nn.CrossEntropyLoss()
 
         # Initialize metrics
-        self.accuracy = torchmetrics.Accuracy(num_classes=3, task="multiclass", top_k=1)
-
-        # Save model hyperparameters
-        self.save_hyperparameters()
+        self.accuracy = torchmetrics.classification.MulticlassAccuracy(num_classes=3, top_k=1)
 
     def forward(self, x):
         return self.model(x)
@@ -37,10 +32,7 @@ class ShoeClassifier(pl.LightningModule):
         logits = self.model(images)
         loss = self.loss(logits, labels)
 
-        preds = torch.argmax(logits, dim=1).int()
-        int_labels = torch.argmax(labels, dim=1).int()
-
-        acc = self.accuracy(preds, int_labels)
+        acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
 
         self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -52,9 +44,7 @@ class ShoeClassifier(pl.LightningModule):
         logits = self.model(images)
         loss = self.loss(logits, labels)
 
-        preds = torch.argmax(logits, dim=1).int()
-        int_labels = torch.argmax(labels, dim=1).int()
-        acc = self.accuracy(preds, int_labels)
+        acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
 
         self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
         self.log("val_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -64,9 +54,7 @@ class ShoeClassifier(pl.LightningModule):
         logits = self.model(images)
         loss = self.loss(logits, labels)
 
-        preds = torch.argmax(logits, dim=1).int()
-        int_labels = torch.argmax(labels, dim=1).int()
-        acc = self.accuracy(preds, int_labels)
+        acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
 
         self.log("test_loss", loss, logger=True)
         self.log("test_acc", acc, logger=True)
@@ -94,3 +82,14 @@ class ShoeClassifier(pl.LightningModule):
         )
 
         return model
+
+    def __to_int_labels(self, labels):
+        """Converts batched one-hot encoded labels or output logits to integer labels.
+
+        Args:
+            labels (torch.Tensor): Batched one-hot encoded labels or output logits with shape (batch_size, n_classes).
+
+        Returns:
+            torch.Tensor: Integer labels.
+        """
+        return torch.argmax(labels, dim=1).int()

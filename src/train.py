@@ -35,16 +35,11 @@ def train(cfg: ShoeCLFConfig) -> None:
     else:
         transforms = A.Compose([A.Resize(*cfg.data.image_size), ToTensorV2()])
 
-    # Initialize train dataset
+    # Initialize training/validation datasets
     train_dataset = FootwearDataset(index_path=cfg.data.index.train, root_data_dir=".", transforms=transforms)
-
-    # Initialize val dataset
     val_dataset = FootwearDataset(index_path=cfg.data.index.val, root_data_dir=".", transforms=transforms)
 
-    # Initialize model
-    model = ShoeClassifier(cfg=cfg)
-
-    # Initialize dataloaders
+    # Initialize training/validation dataloaders
     train_loader = DataLoader(train_dataset, **cfg.training.dataloader_kwargs)
     val_loader = DataLoader(val_dataset, **cfg.eval.dataloader_kwargs)
 
