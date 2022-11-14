@@ -48,7 +48,7 @@ eval:
 
   # Arguments for the validation/test dataloaders
   dataloader_kwargs:
-    batch_size: 64
+    batch_size: 512
     shuffle: false
     num_workers: 8
     pin_memory: false
