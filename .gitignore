@@ -139,3 +139,6 @@ lightning_logs/
 
 # Hydra outputs
 outputs/
+
+# VSCode
+.vscode/
