@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Data:
+    root_data_dir: str
     index: dict[str, str]
     image_size: tuple[int, int]
     n_classes: int
