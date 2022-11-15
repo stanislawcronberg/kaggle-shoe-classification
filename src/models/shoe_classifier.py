@@ -15,6 +15,7 @@ class ShoeClassifier(pl.LightningModule):
 
         # Initialize config
         self.cfg = cfg
+        self.learning_rate = self.cfg.training.learning_rate
 
         # Initialize backbone model dynamically
         self.model = self.__initialize_model()
@@ -61,7 +62,7 @@ class ShoeClassifier(pl.LightningModule):
         self.log("test_acc", acc, logger=True)
 
     def configure_optimizers(self):
-        return Adam(self.model.parameters(), lr=self.cfg.training.learning_rate)
+        return Adam(self.model.parameters(), lr=self.learning_rate)
 
     def __initialize_model(self):
         """Initialize the model dynamically.
@@ -82,13 +83,15 @@ class ShoeClassifier(pl.LightningModule):
 
         return model
 
-    def __to_int_labels(self, labels):
+    def __to_int_labels(self, labels) -> torch.Tensor:
         """Converts batched one-hot encoded labels or output logits to integer labels.
+
+        # TODO: Double check output shape
 
         Args:
             labels (torch.Tensor): Batched one-hot encoded labels or output logits with shape (batch_size, n_classes).
 
         Returns:
-            torch.Tensor: Integer labels.
+            torch.Tensor: Integer labels with shape (batch_size,1).
         """
         return torch.argmax(labels, dim=1).int()
