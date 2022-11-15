@@ -6,7 +6,7 @@ data:
     val: "data/index/val.csv"
     test: "data/index/test.csv"
 
-  image_size: [128, 128]
+  image_size: [240, 240]
   n_classes: 3
   in_channels: 3
 
