@@ -4,6 +4,7 @@ import torch.nn as nn
 import torchmetrics
 from torch.optim import Adam
 
+import models.backbones as implemented_models
 from datasets.config import ShoeCLFConfig
 
 
@@ -68,8 +69,6 @@ class ShoeClassifier(pl.LightningModule):
         Returns:
             nn.Module: Model with pretrained weights.
         """
-
-        implemented_models = __import__("models.backbones")
 
         # Check if model name exists in models/backbones
         if not hasattr(implemented_models, self.cfg.model):
