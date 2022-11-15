@@ -36,7 +36,11 @@ def train(cfg: ShoeCLFConfig) -> None:
         transforms = A.Compose([A.Resize(*cfg.data.image_size), ToTensorV2()])
 
     # Initialize training/validation datasets
-    train_dataset = FootwearDataset(index_path=cfg.data.index.train, root_data_dir=".", transforms=transforms)
+    train_dataset = FootwearDataset(
+        index_path=cfg.data.index.train,
+        root_data_dir=cfg.data.root_data_dir,
+        transforms=transforms,
+    )
     val_dataset = FootwearDataset(index_path=cfg.data.index.val, root_data_dir=".", transforms=transforms)
 
     # Initialize training/validation dataloaders

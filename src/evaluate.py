@@ -18,7 +18,11 @@ def evaluate(cfg: ShoeCLFConfig) -> None:
     transforms = A.Compose([A.Resize(*cfg.data.image_size), ToTensorV2()])
 
     # Initialize test dataset and dataloader
-    test_dataset = FootwearDataset(index_path=cfg.data.index.test, root_data_dir=Path("."), transforms=transforms)
+    test_dataset = FootwearDataset(
+        index_path=cfg.data.index.test,
+        root_data_dir=cfg.data.root_data_dir,
+        transforms=transforms,
+    )
     test_loader = DataLoader(test_dataset, **cfg.eval.dataloader_kwargs)
 
     # Initialize model
