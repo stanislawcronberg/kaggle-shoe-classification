@@ -1,11 +1,12 @@
 data:
 
+  root_data_dir: "."  # Absolute or relative path to the parent directory of data/
   index:
     train: "data/index/train.csv"
     val: "data/index/val.csv"
     test: "data/index/test.csv"
 
-  image_size: [240, 240]
+  image_size: [128, 128]
   n_classes: 3
   in_channels: 3
 
@@ -44,7 +45,7 @@ training:
   pin_memory: bool  # Whether to pin memory in the dataloaders
 
 eval:
-  ckpt_path: "/home/scronberg/Documents/GitHub/shoe-sandal-boot-clf-pytorch/lightning_logs/version_4/checkpoints/epoch=3-step=1500.ckpt"  # Path to model checkpoint
+  ckpt_path: "lightning_logs/version_4/checkpoints/epoch=3-step=1500.ckpt"  # Path to model checkpoint
 
   # Arguments for the validation/test dataloaders
   dataloader_kwargs:
