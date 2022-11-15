@@ -28,20 +28,33 @@ class FootwearDataModule(pl.LightningDataModule):
             )
             self._val_transforms = self.__initialize_transforms(use_augmentations=False)
 
-            self.train_dataset = self.__initialize_dataset(self.cfg.data.index.train, self._train_transforms)
-            self.val_dataset = self.__initialize_dataset(self.cfg.data.index.val, self._val_transforms)
+            self.train_dataset = self.__initialize_dataset(
+                index_path=self.cfg.data.index.train,
+                transforms=self._train_transforms,
+            )
+            self.val_dataset = self.__initialize_dataset(
+                index_path=self.cfg.data.index.val,
+                transforms=self._val_transforms,
+            )
 
         if stage == "test" or stage is None:
 
             self.eval_transforms = self.__initialize_transforms(use_augmentations=False)
 
-            self.test_dataset = self.__initialize_dataset(self.cfg.data.index.test, transforms=self.eval_transforms)
+            self.test_dataset = self.__initialize_dataset(
+                index_path=self.cfg.data.index.test,
+                transforms=self.eval_transforms,
+            )
             self.test_transforms = self.__initialize_transforms(use_augmentations=False)
 
         if stage == "predict" or stage is None:
             # TODO: Decide what to do here, test_dataset is temporary
             self.predict_transforms = self.__initialize_transforms(use_augmentations=False)
-            self.predict_dataset = self.__initialize_dataset(self.cfg.data.index.test)
+
+            self.predict_dataset = self.__initialize_dataset(
+                index_path=self.cfg.data.index.test,
+                transforms=self.predict_transforms,
+            )
 
     def train_dataloader(self):
         return DataLoader(self.train_dataset, **self.cfg.training.dataloader_kwargs)
