@@ -31,7 +31,7 @@ class ShoeClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         images, labels = batch
-        logits = self.model(images)
+        logits = self(images)
         loss = self.loss(logits, labels)
 
         acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
@@ -43,7 +43,7 @@ class ShoeClassifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         images, labels = batch
-        logits = self.model(images)
+        logits = self(images)
         loss = self.loss(logits, labels)
 
         acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
@@ -53,7 +53,7 @@ class ShoeClassifier(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         images, labels = batch
-        logits = self.model(images)
+        logits = self(images)
         loss = self.loss(logits, labels)
 
         acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
@@ -83,7 +83,7 @@ class ShoeClassifier(pl.LightningModule):
 
         return model
 
-    def __to_int_labels(self, labels) -> torch.Tensor:
+    def __to_int_labels(self, labels: torch.Tensor) -> torch.Tensor:
         """Converts batched one-hot encoded labels or output logits to integer labels.
 
         # TODO: Double check output shape
