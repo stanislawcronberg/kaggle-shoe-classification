@@ -50,7 +50,8 @@ class FootwearDataset(Dataset):
 
         return image, label
 
-    def __initialize_filepaths_and_labels(self) -> tuple[list[Path], np.ndarray]:
+    def __initialize_filepaths_and_labels(self) -> tuple[np.ndarray, np.ndarray]:
+        # TODO: Double check datatypes here
         image_paths = self.index["image_path"].values  # .values returns a numpy array of the filepaths
         image_paths = np.array([str(self.root_data_dir / image_path) for image_path in image_paths])
         labels = self.index["label"].values.reshape(-1, 1)  # Reshape to add a dimension
