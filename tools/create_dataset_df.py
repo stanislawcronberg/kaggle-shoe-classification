@@ -47,6 +47,7 @@ def split_dataframe_into_train_val_test(
 
     Args:
         df (pd.DataFrame): Dataframe to split.
+        output_dir (Path): Path to the directory where the csv files will be saved.
         train_size (float): Size of the train dataframe.
         val_size (float): Size of the validation dataframe.
         test_size (float): Size of the test dataframe.
