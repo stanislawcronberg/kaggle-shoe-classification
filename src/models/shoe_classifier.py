@@ -4,6 +4,7 @@ import torch.nn as nn
 import torchmetrics
 from torch.optim import Adam
 
+import models.backbones as implemented_models
 from datasets.config import ShoeCLFConfig
 
 
@@ -14,6 +15,7 @@ class ShoeClassifier(pl.LightningModule):
 
         # Initialize config
         self.cfg = cfg
+        self.learning_rate = self.cfg.training.learning_rate
 
         # Initialize backbone model dynamically
         self.model = self.__initialize_model()
@@ -29,7 +31,7 @@ class ShoeClassifier(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         images, labels = batch
-        logits = self.model(images)
+        logits = self(images)
         loss = self.loss(logits, labels)
 
         acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
@@ -41,7 +43,7 @@ class ShoeClassifier(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         images, labels = batch
-        logits = self.model(images)
+        logits = self(images)
         loss = self.loss(logits, labels)
 
         acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
@@ -51,7 +53,7 @@ class ShoeClassifier(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         images, labels = batch
-        logits = self.model(images)
+        logits = self(images)
         loss = self.loss(logits, labels)
 
         acc = self.accuracy(self.__to_int_labels(logits), self.__to_int_labels(labels))
@@ -60,7 +62,7 @@ class ShoeClassifier(pl.LightningModule):
         self.log("test_acc", acc, logger=True)
 
     def configure_optimizers(self):
-        return Adam(self.model.parameters(), lr=self.cfg.training.learning_rate)
+        return Adam(self.model.parameters(), lr=self.learning_rate)
 
     def __initialize_model(self):
         """Initialize the model dynamically.
@@ -68,8 +70,6 @@ class ShoeClassifier(pl.LightningModule):
         Returns:
             nn.Module: Model with pretrained weights.
         """
-
-        implemented_models = __import__("models.backbones")
 
         # Check if model name exists in models/backbones
         if not hasattr(implemented_models, self.cfg.model):
@@ -83,13 +83,15 @@ class ShoeClassifier(pl.LightningModule):
 
         return model
 
-    def __to_int_labels(self, labels):
+    def __to_int_labels(self, labels: torch.Tensor) -> torch.Tensor:
         """Converts batched one-hot encoded labels or output logits to integer labels.
+
+        # TODO: Double check output shape
 
         Args:
             labels (torch.Tensor): Batched one-hot encoded labels or output logits with shape (batch_size, n_classes).
 
         Returns:
-            torch.Tensor: Integer labels.
+            torch.Tensor: Integer labels with shape (batch_size,1).
         """
         return torch.argmax(labels, dim=1).int()
