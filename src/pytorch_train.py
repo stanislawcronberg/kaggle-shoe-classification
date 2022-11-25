@@ -25,12 +25,12 @@ if __name__ == "__main__":
     test_data = FootwearDataset(index_path=Path("data/index/test.csv"), transform=transforms)
 
     # Setup training hyperparameters
-    num_epochs = 5
-    learning_rate = 0.001
-    batch_size = 32
+    num_epochs = 1
+    learning_rate = 0.01
+    batch_size = 128
 
     # Setup train and validation dataloaders from the datasets with get_data_loader utility function
-    train_loader = get_dataloader(train_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=None)
+    train_loader = get_dataloader(train_data, batch_size=batch_size, shuffle=True, num_workers=8, pin_memory=True)
     val_loader = get_dataloader(val_data, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=None)
     test_loader = get_dataloader(test_data, batch_size=batch_size, shuffle=False, num_workers=8, pin_memory=None)
 
@@ -73,7 +73,6 @@ if __name__ == "__main__":
             This is not what we want because we want to compute the gradients of the current batch only
             We call optimizer.zero_grad() before the forward pass
             """
-            optimizer.zero_grad()
 
             # Forward pass
             outputs = model(images)
@@ -82,6 +81,7 @@ if __name__ == "__main__":
             loss = criterion(outputs, labels)
 
             # Backward pass and gradient descent update step
+            optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 

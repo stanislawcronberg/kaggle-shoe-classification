@@ -1,2 +1,2 @@
-from .backbones import EffNetV2S, MobileNetV3S
+from .backbones import EffNetV2S, MobileNetV3S, InceptionV3
 from .shoe_classifier import ShoeClassifier

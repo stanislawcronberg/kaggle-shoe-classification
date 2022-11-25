@@ -5,7 +5,7 @@ data:
     val: "data/index/val.csv"
     test: "data/index/test.csv"
 
-  image_size: [240, 240]
+  image_size: [128, 128]
   n_classes: 3
   in_channels: 3
 
@@ -13,8 +13,8 @@ model: "MobileNetV3S"  # One of ["EffNetV2S", "MobileNetV3S"]
 
 training:
 
-  learning_rate: 0.0001
-  batch_size: 32
+  learning_rate: 0.00575
+  batch_size: 128
   use_augmentations: true
   use_early_stopping: true
   early_stopping_kwargs:
@@ -28,14 +28,15 @@ training:
     accelerator: "gpu"
     devices: 1
     max_epochs: 100
-    precision: 16
+    precision: 32
     enable_checkpointing: true
+    auto_lr_find: true
 
   num_workers: 8  # Number of workers for the dataloaders
-  pin_memory: bool  # Whether to pin memory in the dataloaders
+  pin_memory: true  # Whether to pin memory in the dataloaders
 
 eval:
-  batch_size: 32
+  batch_size: 128
   ckpt_path: "/home/scronberg/Documents/GitHub/shoe-sandal-boot-clf-pytorch/lightning_logs/version_33/checkpoints/epoch=47-step=18000.ckpt"  # Path to model checkpoint
 
 seed: 42

@@ -58,11 +58,16 @@ def train(cfg: ShoeCLFConfig) -> None:
         early_stopping = pl.callbacks.EarlyStopping(**cfg.training.early_stopping_kwargs)
 
     # Initialize model & trainer
-    model = ShoeClassifier(cfg=cfg)
+    model = ShoeClassifier(cfg=cfg, learning_rate=cfg.training.learning_rate)
     trainer = pl.Trainer(
         **cfg.training.trainer_kwargs,
         callbacks=[early_stopping] if early_stopping else None,
     )
+
+    if cfg.training.trainer_kwargs.auto_lr_find:
+        trainer.tune(model=model, train_dataloader=train_loader, val_dataloaders=val_loader)
+
+    trainer.tune(model, train_loader, val_loader)
 
     # Train model
     trainer.fit(model, train_loader, val_loader)

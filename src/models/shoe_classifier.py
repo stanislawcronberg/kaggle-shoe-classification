@@ -22,11 +22,14 @@ from datasets.utils import get_train_val_dataloaders
 
 
 class ShoeClassifier(pl.LightningModule):
-    def __init__(self, cfg: ShoeCLFConfig):
+    def __init__(self, cfg: ShoeCLFConfig, learning_rate: float = None):
         super().__init__()
 
         # Initialize config
         self.cfg = cfg
+
+        # Learning rate for automatic learning rate finder
+        self.learning_rate = learning_rate
 
         # Initialize backbone model dynamically
         self.model = self.__initialize_model()
@@ -34,7 +37,7 @@ class ShoeClassifier(pl.LightningModule):
         self.loss = nn.CrossEntropyLoss()
 
         # Initialize metrics
-        self.accuracy = torchmetrics.Accuracy(num_classes=3, task="multiclass", top_k=1)
+        self.accuracy = torchmetrics.classification.MulticlassAccuracy(num_classes=3, top_k=1)
 
         # Save model hyperparameters
         self.save_hyperparameters()
@@ -52,8 +55,8 @@ class ShoeClassifier(pl.LightningModule):
 
         acc = self.accuracy(preds, int_labels)
 
-        self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-        self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("train_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("train_acc", acc, on_step=False, on_epoch=True, prog_bar=True)
 
         return loss
 
@@ -66,11 +69,23 @@ class ShoeClassifier(pl.LightningModule):
         int_labels = torch.argmax(labels, dim=1).int()
         acc = self.accuracy(preds, int_labels)
 
-        self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True, logger=True)
-        self.log("val_acc", acc, on_step=False, on_epoch=True, prog_bar=True, logger=True)
+        self.log("val_loss", loss, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("val_acc", acc, on_step=False, on_epoch=True, prog_bar=True)
+
+    def test_step(self, batch, batch_idx):
+        images, labels = batch
+        logits = self(images)
+        loss = self.loss(logits, labels)
+
+        preds = torch.argmax(logits, dim=1).int()
+        int_labels = torch.argmax(labels, dim=1).int()
+        acc = self.accuracy(preds, int_labels)
+
+        self.log("test_loss", loss, logger=True)
+        self.log("test_acc", acc, logger=True)
 
     def configure_optimizers(self):
-        return Adam(self.model.parameters(), lr=self.cfg.training.learning_rate)
+        return Adam(self.model.parameters(), lr=self.learning_rate)
 
     def __initialize_model(self):
         """Initialize the model dynamically.

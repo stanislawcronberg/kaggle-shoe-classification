@@ -37,15 +37,13 @@ def evaluate(cfg: ShoeCLFConfig) -> None:
     )
 
     # Setup trainer
-    trainer = pl.Trainer(
-        **cfg.training.trainer_kwargs,
-    )
+    trainer = pl.Trainer(**cfg.training.trainer_kwargs)
 
     # Evaluate model
     trainer.test(
         model=model,
-        test_dataloaders=test_loader,
-        ckpts_path=cfg.eval.ckpt_path,
+        dataloaders=test_loader,
+        ckpt_path=cfg.eval.ckpt_path,
     )
 
 

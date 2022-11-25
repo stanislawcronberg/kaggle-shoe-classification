@@ -29,9 +29,8 @@ class FootwearDataset(Dataset):
         return len(self.image_paths)
 
     def __getitem__(self, index):
-
         image_path = self.image_paths[index]
-        image = imread(str(image_path)).astype(np.float32) / 255.0  # Read image and normalize
+        image = imread(image_path).astype(np.float32) / 255.0  # Read image and normalize
         image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1)  # Convert to tensor and permute
 
         label = self.labels[index]
@@ -47,3 +46,9 @@ class FootwearDataset(Dataset):
         labels = self.index["label"].values.reshape(-1, 1)  # Reshape to 2D array
 
         return image_paths, labels
+
+
+if __name__ == "__main__":
+
+    dataset = FootwearDataset("data/index/train.csv", transform=None)
+    image, image = dataset[0]
